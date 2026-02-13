@@ -58,6 +58,4 @@ uvicorn main:app --reload
 - **Swagger UI**: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 - **Redoc**: [http://127.0.0.1:8000/redoc](http://127.0.0.1:8000/redoc)
 
-## Testing
 
-Instructions for testing path and query parameters can be found in the `parameter_testing_guide.md` file in the root directory.
