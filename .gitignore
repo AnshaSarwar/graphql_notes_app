@@ -1,0 +1,28 @@
+# Virtual Environment
+app/venv/
+venv/
+.venv/
+env/
+bin/
+include/
+lib/
+lib64/
+share/
+pyvenv.cfg
+
+# Environment Variables
+.env
+app/.env
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# IDEs
+.vscode/
+.idea/
+
+# OS Files
+.DS_Store
+Thumbs.db

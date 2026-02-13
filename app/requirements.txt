@@ -1,0 +1,11 @@
+python-dotenv
+pydantic
+pydantic-settings
+fastapi
+uvicorn
+sqlalchemy
+psycopg2-binary
+pwdlib[argon2]
+pydantic-settings
+pyjwt
+python-multipart
