@@ -10,6 +10,8 @@ from schemas.token import Token
 from core.security import create_access_token, get_password_hash, authenticate_user
 from core.config import settings
 
+
+# Authentication router for user registration and login
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 @router.post("/register", response_model=UserResponse)

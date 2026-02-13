@@ -23,16 +23,12 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> UserRespo
         role=payload.get("role")
     )
 
+# Ensures the current user is active (not implemented yet)
 def get_current_active_user(current_user: UserResponse = Depends(get_current_user)) -> UserResponse:
     return current_user
 
 # Ensures the current user has the ADMIN role
 def get_current_admin_user(current_user: UserResponse = Depends(get_current_user)) -> UserResponse:
-    if current_user.role != UserRole.ADMIN:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only administrators can access this resource")
-    return current_user
-
-def required_admin(current_user: UserResponse = Depends(get_current_user)) -> UserResponse:
     if current_user.role != UserRole.ADMIN:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only administrators can access this resource")
     return current_user

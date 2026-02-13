@@ -1,10 +1,8 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
+# Saves a single object to the database with transaction safety.
 def db_save(db: Session, obj: any, error_detail: str = "Database error occurred"):
-    """
-    Saves a single object to the database with transaction safety.
-    """
     try:
         db.add(obj)
         db.commit()
@@ -17,10 +15,8 @@ def db_save(db: Session, obj: any, error_detail: str = "Database error occurred"
             detail=error_detail
         )
 
+# Commits the current session with transaction safety. Useful for updates.
 def db_commit(db: Session, error_detail: str = "Database error occurred"):
-    """
-    Commits the current session with transaction safety. Useful for updates.
-    """
     try:
         db.commit()
     except Exception:

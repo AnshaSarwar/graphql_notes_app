@@ -7,7 +7,10 @@ from models.user import User
 from schemas.user import UserResponse, UserRole
 from dependencies.auth import get_current_admin_user
 
+
+# Admin router for admin-specific operations
 router = APIRouter(prefix="/admin", tags=["admin"])
+
 
 @router.get("/users", response_model=List[UserResponse], dependencies=[Depends(get_current_admin_user)])
 def read_all_users(db: Session = Depends(get_db)):

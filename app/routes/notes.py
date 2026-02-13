@@ -8,6 +8,8 @@ from schemas.note import NoteCreate, NoteUpdate, NoteResponse
 from schemas.user import UserResponse as UserSchemaResponse
 from dependencies.auth import get_current_regular_user
 
+
+# Notes router for note-specific operations
 router = APIRouter(prefix="/notes", tags=["notes"])
 
 @router.post("/", response_model=NoteResponse)
