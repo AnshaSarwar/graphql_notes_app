@@ -7,6 +7,23 @@ from models.user import User
 from models.note import Note
 from graphql_api.types import UserType, NoteType, TokenType, UserRole
 
+# Helper functions for role validation
+def require_user_role(user):
+    """Ensure the current user has 'user' role."""
+    if not user:
+        raise Exception("Not authenticated")
+    if user.role != "user":
+        raise Exception("Only regular users can manage notes")
+    return user
+
+def require_admin_role(user):
+    """Ensure the current user has 'admin' role."""
+    if not user:
+        raise Exception("Not authenticated")
+    if user.role != "admin":
+        raise Exception("Admin access required")
+    return user
+
 # Mutation class to handle all mutation operations
 @strawberry.type
 class Mutation:
@@ -52,12 +69,7 @@ class Mutation:
     # Admin: Read all regular users (excludes admins)
     @strawberry.mutation
     async def read_users(self, info) -> list[UserType]:
-        user = await info.context.get_current_user()
-        if not user:
-            raise Exception("Not authenticated")
-        if user.role != "admin":
-            raise Exception("Admin access required")
-        
+        user = require_admin_role(await info.context.get_current_user())
         db = info.context.db
         # Only return regular users, not admins
         return db.query(User).filter(User.role == "user").all()
@@ -65,12 +77,7 @@ class Mutation:
     # Admin: Delete any regular user (cannot delete admins)
     @strawberry.mutation
     async def delete_user(self, info, id: int) -> bool:
-        user = await info.context.get_current_user()
-        if not user:
-            raise Exception("Not authenticated")
-        if user.role != "admin":
-            raise Exception("Admin access required")
-        
+        user = require_admin_role(await info.context.get_current_user())
         db = info.context.db
         target_user = db.query(User).filter(User.id == id).first()
         if not target_user:
@@ -86,24 +93,14 @@ class Mutation:
     # Read all notes (users only)
     @strawberry.mutation
     async def read_notes(self, info) -> list[NoteType]:
-        user = await info.context.get_current_user()
-        if not user:
-            raise Exception("Not authenticated")
-        if user.role != "user":
-            raise Exception("Only regular users can manage notes")
-
+        user = require_user_role(await info.context.get_current_user())
         db = info.context.db
         return db.query(Note).filter(Note.owner_id == user.id).all()
 
     # Create a new note (users only)
     @strawberry.mutation
     async def create_note(self, info, title: str, content: str) -> NoteType:
-        user = await info.context.get_current_user()
-        if not user:
-            raise Exception("Not authenticated")
-        if user.role != "user":
-            raise Exception("Only regular users can manage notes")
-
+        user = require_user_role(await info.context.get_current_user())
         db = info.context.db
         new_note = Note(title=title, content=content, owner_id=user.id)
         return db_save(db, new_note)
@@ -111,12 +108,7 @@ class Mutation:
     # Update a note (users only)
     @strawberry.mutation
     async def update_note(self, info, id: int, title: str | None = None, content: str | None = None) -> NoteType:
-        user = await info.context.get_current_user()
-        if not user:
-            raise Exception("Not authenticated")
-        if user.role != "user":
-            raise Exception("Only regular users can manage notes")
-
+        user = require_user_role(await info.context.get_current_user())
         db = info.context.db
         note = db.query(Note).filter(Note.id == id, Note.owner_id == user.id).first()
         if not note:
@@ -134,12 +126,7 @@ class Mutation:
     # Delete a note (users only)
     @strawberry.mutation
     async def delete_note(self, info, id: int) -> bool:
-        user = await info.context.get_current_user()
-        if not user:
-            raise Exception("Not authenticated")
-        if user.role != "user":
-            raise Exception("Only regular users can manage notes")
-        
+        user = require_user_role(await info.context.get_current_user())
         db = info.context.db
         note = db.query(Note).filter(Note.id == id, Note.owner_id == user.id).first()
         if not note:
