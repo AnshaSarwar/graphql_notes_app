@@ -5,7 +5,7 @@ from core.security import create_access_token, get_password_hash, authenticate_u
 from db.crud_utils import db_save, db_delete
 from models.user import User
 from models.note import Note
-from graphql.types import UserType, TokenType, UserRole
+from graphql_api.types import UserType, NoteType, TokenType, UserRole
 from typing import Optional
 
 @strawberry.type

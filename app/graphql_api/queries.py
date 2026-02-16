@@ -1,6 +1,6 @@
 import strawberry
 from typing import List, Optional
-from graphql.types import UserType, NoteType, UserRole
+from graphql_api.types import UserType, NoteType, UserRole
 from models.note import Note
 from models.user import User
 

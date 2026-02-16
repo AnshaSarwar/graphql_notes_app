@@ -4,8 +4,8 @@ from db.database import engine, Base
 from core.config import settings
 from fastapi.middleware.cors import CORSMiddleware
 from strawberry.fastapi import GraphQLRouter
-from graphql.schema import schema
-from graphql.context import get_context
+from graphql_api.schema import schema
+from graphql_api.context import get_context
 
 # Create tables in database
 Base.metadata.create_all(bind=engine)
