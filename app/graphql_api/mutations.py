@@ -6,10 +6,12 @@ from db.crud_utils import db_save, db_delete
 from models.user import User
 from models.note import Note
 from graphql_api.types import UserType, NoteType, TokenType, UserRole
-from typing import Optional
 
+# Mutation class to handle all mutation operations
 @strawberry.type
 class Mutation:
+
+    # Register a new user
     @strawberry.mutation
     def register(
         self, 
@@ -31,6 +33,7 @@ class Mutation:
         )
         return db_save(db, new_user)
 
+    # Login user
     @strawberry.mutation
     def login(self, info, username: str, password: str) -> TokenType:
         db = info.context.db
@@ -46,16 +49,83 @@ class Mutation:
         )
         return TokenType(access_token=access_token, token_type="bearer")
 
+    # Admin: Read all regular users (excludes admins)
+    @strawberry.mutation
+    async def read_users(self, info) -> list[UserType]:
+        user = await info.context.get_current_user()
+        if not user:
+            raise Exception("Not authenticated")
+        if user.role != "admin":
+            raise Exception("Admin access required")
+        
+        db = info.context.db
+        # Only return regular users, not admins
+        return db.query(User).filter(User.role == "user").all()
+
+    # Admin: Delete any regular user (cannot delete admins)
+    @strawberry.mutation
+    async def delete_user(self, info, id: int) -> bool:
+        user = await info.context.get_current_user()
+        if not user:
+            raise Exception("Not authenticated")
+        if user.role != "admin":
+            raise Exception("Admin access required")
+        
+        db = info.context.db
+        target_user = db.query(User).filter(User.id == id).first()
+        if not target_user:
+            raise Exception("User not found")
+        
+        # Prevent deleting admin accounts
+        if target_user.role == "admin":
+            raise Exception("Cannot delete admin users")
+        
+        db_delete(db, target_user)
+        return True
+
+    # Read all notes
+    @strawberry.mutation
+    async def read_notes(self, info) -> list[NoteType]:
+        user = await info.context.get_current_user()
+        if not user:
+            raise Exception("Not authenticated")
+
+        db = info.context.db
+        return db.query(Note).filter(Note.owner_id == user.id).all()
+
+    # Create a new note
     @strawberry.mutation
     async def create_note(self, info, title: str, content: str) -> NoteType:
         user = await info.context.get_current_user()
         if not user:
             raise Exception("Not authenticated")
-        
+
         db = info.context.db
         new_note = Note(title=title, content=content, owner_id=user.id)
         return db_save(db, new_note)
 
+    # Update a note
+    @strawberry.mutation
+    async def update_note(self, info, id: int, title: str | None = None, content: str | None = None) -> NoteType:
+        user = await info.context.get_current_user()
+        if not user:
+            raise Exception("Not authenticated")
+
+        db = info.context.db
+        note = db.query(Note).filter(Note.id == id, Note.owner_id == user.id).first()
+        if not note:
+            raise Exception("Note not found or access denied")
+
+        if title:
+            note.title = title
+        if content:
+            note.content = content
+
+        db.commit()
+        db.refresh(note)
+        return note
+
+    # Delete a note
     @strawberry.mutation
     async def delete_note(self, info, id: int) -> bool:
         user = await info.context.get_current_user()
