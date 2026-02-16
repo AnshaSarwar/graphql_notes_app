@@ -3,13 +3,15 @@ from fastapi import FastAPI
 from db.database import engine, Base
 from core.config import settings
 from fastapi.middleware.cors import CORSMiddleware
-from routes import auth, notes, admin
+from strawberry.fastapi import GraphQLRouter
+from graphql.schema import schema
+from graphql.context import get_context
 
 # Create tables in database
 Base.metadata.create_all(bind=engine)
 
 # Initialize FastAPI app
-app = FastAPI(title=settings.TITLE, version=settings.VERSION)
+app = FastAPI(title="FastAPI Notes App (GraphQL)", version="2.0.0")
 
 # Add CORS Middleware
 app.add_middleware(
@@ -20,12 +22,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include Routers
-app.include_router(auth.router)
-app.include_router(notes.router)
-app.include_router(admin.router)
+# GraphQL Router
+graphql_app = GraphQLRouter(schema, context_getter=get_context)
+app.include_router(graphql_app, prefix="/graphql")
 
-# Root endpoint for health check or welcome message
 @app.get("/")
 def root():
-    return {"message": "Welcome to the Notes App API"}
+    return {"message": "Welcome to the Notes App GraphQL API", "docs": "/graphql"}

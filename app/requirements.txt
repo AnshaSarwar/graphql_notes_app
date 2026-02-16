@@ -8,4 +8,5 @@ psycopg2-binary
 pwdlib[argon2]
 pydantic-settings
 pyjwt
+strawberry-graphql[fastapi]
 python-multipart
